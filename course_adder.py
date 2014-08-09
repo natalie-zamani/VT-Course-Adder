@@ -5,26 +5,27 @@ from bs4 import BeautifulSoup
 from time import sleep
 
 def login(username, password, myBrowser):
-	myBrowser.set_handle_robots(False)
+	try:
+		myBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
 
-	myBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
+		myBrowser.follow_link(text="Login to HokieSpa >>>")
 
-	myBrowser.follow_link(text="Login to HokieSpa >>>")
+		myBrowser.select_form(nr = 0)
 
-	myBrowser.select_form(nr = 0)
+		myBrowser["username"] = username
 
-	myBrowser["username"] = username
+		myBrowser["password"] = password
 
-	myBrowser["password"] = password
+		myBrowser.submit()
 
-	# And we're in!
-	myBrowser.submit()
+		myBrowser.follow_link(text="Hokie Spa")
 
-	myBrowser.follow_link(text="Hokie Spa")
+		myBrowser.follow_link(text="Registration and Schedule")
 
-	myBrowser.follow_link(text="Registration and Schedule")
+		myBrowser.follow_link(text="Drop/Add", nr=0)
+	except:
+		login(username, password, myBrowser)
 
-	myBrowser.follow_link(text="Drop/Add", nr=0)
 
 
 def add_course(myBrowser, crn):
@@ -32,7 +33,7 @@ def add_course(myBrowser, crn):
 	crnControl = myBrowser.find_control(id = "crn_id1")
 	crnControl.readonly = False
 	crnControl._value = crn
-	response = crn.submit()
+	response = myBrowser.submit()
 	responseText = response.get_data()
 
 	if "Registration Errors" in responseText:
@@ -48,6 +49,7 @@ def filter_invalid_crns(classes):
 
 def main():
 	myBrowser = mechanize.Browser()
+	myBrowser.set_handle_robots(False)
 	username = raw_input("Enter your username: ")
 	password = raw_input("Enter your password: ")
 	
@@ -58,11 +60,10 @@ def main():
 	filter_invalid_crns(classesToAdd)
 
 	login(username, password, myBrowser)
-	add_course(myBrowser)
 
 	# Runs the script until all classes are successfully added.
 	while len(classesToAdd) > 0:
-		classesToAdd[:] = [crn for crn in classesToAdd if !add_course(myBrowser, crn)]
+		classesToAdd[:] = [crn for crn in classesToAdd if not add_course(myBrowser, crn)]
 		# Idles for 30 seconds before attempting again.
 		sleep(30)
 
