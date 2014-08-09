@@ -27,21 +27,6 @@ def login(username, password, myBrowser):
 	myBrowser.follow_link(text="Drop/Add", nr=0)
 
 
-	'''
-	------ Code below was used to find forms, links, etc ------
-	print myBrowser.response().geturl()
-
-	#print
-
-	#print myBrowser.response().get_data()
-	for link in myBrowser.links():
-		print link.url
-
-	for form in myBrowser.forms():
-		for control in form.controls:
-			print control
-	'''
-
 def add_course(myBrowser, crn):
 	myBrowser.select_form(nr = 1)
 	crnControl = myBrowser.find_control(id = "crn_id1")
