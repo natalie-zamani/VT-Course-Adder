@@ -2,6 +2,7 @@
 
 import mechanize, base64
 from bs4 import BeautifulSoup
+from time import sleep
 
 def login(username, password, myBrowser):
 	myBrowser.set_handle_robots(False)
@@ -9,8 +10,6 @@ def login(username, password, myBrowser):
 	myBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
 
 	myBrowser.follow_link(text="Login to HokieSpa >>>")
-
-	
 
 	myBrowser.select_form(nr = 0)
 
@@ -43,8 +42,20 @@ def login(username, password, myBrowser):
 			print control
 	'''
 
-def add_course(myBrowser):
-	pass
+def add_course(myBrowser, crn):
+	myBrowser.select_form(nr = 1)
+	crnControl = myBrowser.find_control(id = "crn_id1")
+	crnControl.readonly = False
+	crnControl._value = crn
+	response = crn.submit()
+	responseText = response.get_data()
+
+	if "Registration Errors" in responseText:
+		# Unsuccessfully added.
+		return False
+	else:
+		# Successfully added.
+		return True
 
 def filter_invalid_crns(classes):
 	# Removes any elements from the list if the length is not 5.
@@ -63,5 +74,11 @@ def main():
 
 	login(username, password, myBrowser)
 	add_course(myBrowser)
+
+	# Runs the script until all classes are successfully added.
+	while len(classesToAdd) > 0:
+		classesToAdd[:] = [crn for crn in classesToAdd if !add_course(myBrowser, crn)]
+		# Idles for 30 seconds before attempting again.
+		sleep(30)
 
 if __name__ == "__main__": main()
