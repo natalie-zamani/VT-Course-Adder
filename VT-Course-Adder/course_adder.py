@@ -46,10 +46,21 @@ def login(username, password, myBrowser):
 def add_course(myBrowser):
 	pass
 
+def filter_invalid_crns(classes):
+	# Removes any elements from the list if the length is not 5.
+	classes[:] = [crn for crn in classes if len(str(crn)) == 5]
+
 def main():
 	myBrowser = mechanize.Browser()
 	username = raw_input("Enter your username: ")
 	password = raw_input("Enter your password: ")
+	
+	classesToAdd = raw_input("Enter CRN's that you wish to add separated by spaces: ")
+	classesToAdd = map(int, classesToAdd.split())
+
+	# CRN's must 5 numbers long. Get rid of any that are not.
+	filter_invalid_crns(classesToAdd)
+
 	login(username, password, myBrowser)
 	add_course(myBrowser)
 
