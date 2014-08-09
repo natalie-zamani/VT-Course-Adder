@@ -1,3 +1,8 @@
+What this script does
+==============
+This script uses the Python mechanize library to attempt to add courses for you based on the CRNs you provide. Attempts to add courses every 30 seconds until all CRNs provided have been successfully added to your schedule.
+
+
 How to use this script
 ===============
 For these instructions, I will assume that you have Python 2.7.x, pip, and Git installed. If you do not, see the following links: <br />
