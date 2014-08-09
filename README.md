@@ -9,7 +9,7 @@ For these instructions, I will assume that you have Python 2.7.x, pip, and Git i
 1. Open the Terminal/Command Line application.
 2. Navigate to the directory you would like to save this script. ([See this link for reference.](http://guides.macrumors.com/Terminal))
 3. Either download and unzip the script, or (if you have Git installed) type: `git clone git@github.com:mzamani1/VT-Course-Adder.git`
-4. Type `cd VT-Course-Adder/VT-Course-Adder/` to change into the directory with the script.
+4. Type `cd VT-Course-Adder/` to change into the directory with the script.
 5. Type `pip install -r requirements.txt` to install the script dependencies.
 6. Type `chmod 755 course_adder.py` to allow the script to be executed.
 7. Type `./course_adder.py` to run the script.
@@ -18,6 +18,6 @@ For these instructions, I will assume that you have Python 2.7.x, pip, and Git i
 1. Open up Command Prompt.
 2. Change into the directory you would like to save this script. ([See this link for reference.] (http://www.wikihow.com/Change-Directories-in-Command-Prompt))
 3. Either download and unzip the script, or (if you have Git installed) type: `git clone git@github.com:mzamani1/VT-Course-Adder.git`
-4. Type `cd VT-Course-Adder\VT-Course-Adder`
+4. Type `cd VT-Course-Adder`
 5. Type `pip install -r requirements.txt` to install the script dependencies.
 6. Type `python course_adder.py` to run the script.
