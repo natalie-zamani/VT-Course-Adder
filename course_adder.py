@@ -38,9 +38,11 @@ def add_course(myBrowser, crn):
 
 	if "Registration Errors" in responseText:
 		# Unsuccessfully added.
+		print "CRN:", crn, "unsuccessfully added."
 		return False
 	else:
 		# Successfully added.
+		print "CRN:", crn, "successfully added."
 		return True
 
 def filter_invalid_crns(classes):
@@ -66,5 +68,7 @@ def main():
 		classesToAdd[:] = [crn for crn in classesToAdd if not add_course(myBrowser, crn)]
 		# Idles for 30 seconds before attempting again.
 		sleep(30)
+
+	print "All courses added."
 
 if __name__ == "__main__": main()
