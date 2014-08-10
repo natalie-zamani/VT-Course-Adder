@@ -38,7 +38,7 @@ def add_course(myBrowser, crn):
 
 	if "Registration Errors" in responseText:
 		# Unsuccessfully added.
-		print "CRN:", crn, "unsuccessfully added."
+		print "CRN:", crn, "unsuccessfully added. Trying again in 30 seconds."
 		return False
 	else:
 		# Successfully added.
