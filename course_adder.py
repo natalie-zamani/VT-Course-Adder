@@ -42,7 +42,7 @@ def add_course(myBrowser, crn):
 		return False
 	else:
 		# Successfully added.
-		print "CRN:", crn, "successfully added."
+		print "CRN:", crn, "successfully added. Removing from the list."
 		return True
 
 def filter_invalid_crns(classes):
