@@ -24,6 +24,7 @@ def login(username, password, myBrowser):
 
 		myBrowser.follow_link(text="Drop/Add", nr=0)
 	except:
+		print "Error logging in, attempting again..."
 		login(username, password, myBrowser)
 
 
@@ -62,6 +63,8 @@ def main():
 	filter_invalid_crns(classesToAdd)
 
 	login(username, password, myBrowser)
+
+	print "Successfully logged in. Beginning course add attempts."
 
 	# Runs the script until all classes are successfully added.
 	while len(classesToAdd) > 0:
