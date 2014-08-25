@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import mechanize, base64
+import mechanize, base64, getpass
 from bs4 import BeautifulSoup
 from time import sleep
 
@@ -96,7 +96,7 @@ def main():
 	timetableBrowser.set_handle_robots(False)
 
 	username = raw_input("Enter your username: ")
-	password = raw_input("Enter your password: ")
+	password = getpass.getpass("Enter your password: ")
 	
 	classesToAdd = raw_input("Enter CRN's that you wish to add separated by spaces: ")
 	classesToAdd = map(int, classesToAdd.split())
