@@ -4,37 +4,62 @@ import mechanize, base64
 from bs4 import BeautifulSoup
 from time import sleep
 
-def login(username, password, myBrowser):
+def login(username, password, addBrowser, timetableBrowser):
 	try:
-		myBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
+		login_to_hokiespa(username, password, addBrowser, timetableBrowser)
 
-		myBrowser.follow_link(text="Login to HokieSpa >>>")
-
-		myBrowser.select_form(nr = 0)
-
-		myBrowser["username"] = username
-
-		myBrowser["password"] = password
-
-		myBrowser.submit()
-
-		myBrowser.follow_link(text="Hokie Spa")
-
-		myBrowser.follow_link(text="Registration and Schedule")
-
-		myBrowser.follow_link(text="Drop/Add", nr=0)
+		navigate_to_timetable(timetableBrowser)
+		navigate_to_dropadd(addBrowser)
+		print "Successfully logged in. Beginning timetable watching."
 	except:
 		print "Error logging in, attempting again..."
-		login(username, password, myBrowser)
+		login(username, password, addBrowser, timetableBrowser)
 
+def login_to_hokiespa(username, password, addBrowser, timetableBrowser):
+	addBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
+	timetableBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
 
+	addBrowser.follow_link(text="Login to HokieSpa >>>")
+	timetableBrowser.follow_link(text="Login to HokieSpa >>>")
 
-def add_course(myBrowser, crn):
-	myBrowser.select_form(nr = 1)
-	crnControl = myBrowser.find_control(id = "crn_id1")
+	addBrowser.select_form(nr = 0)
+	timetableBrowser.select_form(nr = 0)
+
+	addBrowser["username"] = username
+	timetableBrowser["username"] = username
+
+	addBrowser["password"] = password
+	timetableBrowser["password"] = password
+
+	addBrowser.submit()
+	timetableBrowser.submit()
+
+def navigate_to_timetable(timetableBrowser):
+	timetableBrowser.follow_link(text="Timetable of Classes")
+
+def navigate_to_dropadd(addBrowser):
+	addBrowser.follow_link(text="Hokie Spa")
+	addBrowser.follow_link(text="Registration and Schedule")
+	addBrowser.follow_link(text="Drop/Add", nr=0)
+
+def is_course_open(timetableBrowser, crn):
+	timetableBrowser.select_form(nr = 0)
+	crnControl = timetableBrowser.find_control(name = "crn")
 	crnControl.readonly = False
 	crnControl._value = crn
-	response = myBrowser.submit()
+	response = timetableBrowser.submit()
+	responseText = response.get_data()
+	if "Full" in responseText:
+		return False
+	else:
+		return True
+
+def add_course(addBrowser, crn):
+	addBrowser.select_form(nr = 1)
+	crnControl = addBrowser.find_control(id = "crn_id1")
+	crnControl.readonly = False
+	crnControl._value = crn
+	response = addBrowser.submit()
 	responseText = response.get_data()
 
 	if "Registration Errors" in responseText:
@@ -46,30 +71,50 @@ def add_course(myBrowser, crn):
 		print "CRN:", crn, "successfully added. Removing from the list."
 		return True
 
-def filter_invalid_crns(classes):
+def is_valid_class(crn, timetableBrowser):
+	timetableBrowser.select_form(nr = 0)
+	crnControl = timetableBrowser.find_control(name = "crn")
+	crnControl.readonly = False
+	crnControl._value = crn
+	response = timetableBrowser.submit()
+	responseText = response.get_data()
+	if "NO SECTIONS FOUND FOR THIS INQUIRY." in responseText:
+		return False
+	else:
+		return True
+
+def filter_invalid_crns(classes, timetableBrowser):
 	# Removes any elements from the list if the length is not 5.
-	classes[:] = [crn for crn in classes if len(str(crn)) == 5]
+	classes[:] = [crn for crn in classes if len(str(crn)) == 5 and is_valid_class(crn, timetableBrowser)]
 
 def main():
-	myBrowser = mechanize.Browser()
-	myBrowser.set_handle_robots(False)
+	# Browser for course adding
+	addBrowser = mechanize.Browser()
+	addBrowser.set_handle_robots(False)
+	# Browser for checking the timetable for empty seat
+	timetableBrowser = mechanize.Browser()
+	timetableBrowser.set_handle_robots(False)
+
 	username = raw_input("Enter your username: ")
 	password = raw_input("Enter your password: ")
 	
 	classesToAdd = raw_input("Enter CRN's that you wish to add separated by spaces: ")
 	classesToAdd = map(int, classesToAdd.split())
 
-	# CRN's must 5 numbers long. Get rid of any that are not.
-	filter_invalid_crns(classesToAdd)
+	login(username, password, addBrowser, timetableBrowser)
 
-	login(username, password, myBrowser)
-
-	print "Successfully logged in. Beginning course add attempts."
+	# Eliminates CRN's not of length 5 and that are do not have a class
+	# associated with them.
+	filter_invalid_crns(classesToAdd, timetableBrowser)
 
 	# Runs the script until all classes are successfully added.
 	while len(classesToAdd) > 0:
-		classesToAdd[:] = [crn for crn in classesToAdd if not add_course(myBrowser, crn)]
-		# Idles for 30 seconds before attempting again.
+		openClasses = [crn for crn in classesToAdd if is_course_open(timetableBrowser, crn)]
+
+		for crn in openClasses:
+			if add_course(addBrowser, crn):
+				classesToAdd.remove(crn)
+
 		sleep(30)
 
 	print "All courses added."
