@@ -1,38 +1,46 @@
 #!/usr/bin/python
 
-import mechanize, base64, getpass
+import mechanize, base64, getpass, sys
 from bs4 import BeautifulSoup
 from time import sleep
 
+# Change this value for future sessions.
+termYear = "201501"
+
+# This value must be modified to match the number of the Drop/Add 
+# link you wish to follow (0-indexed). For example, if you wish to 
+# open the first drop-add link, you should set the value to 0, second
+# to 1, etc.
+numberOfDropAddLinkToFollow = 2
+
 def login(username, password, addBrowser, timetableBrowser):
 	try:
-		login_to_hokiespa(username, password, addBrowser, timetableBrowser)
+		login_to_hokiespa(username, password, addBrowser)
+		login_to_hokiespa(username, password, timetableBrowser)
 
 		navigate_to_timetable(timetableBrowser)
 		navigate_to_dropadd(addBrowser)
 		print "Successfully logged in. Beginning timetable watching."
+	except mechanize._mechanize.LinkNotFoundError:
+		sys.exit("Link not found. Please change the termYear and \
+numberOfDropAddLinkToFollow variables to valid values.")
 	except:
 		print "Error logging in, attempting again..."
+		sleep(5)
 		login(username, password, addBrowser, timetableBrowser)
 
-def login_to_hokiespa(username, password, addBrowser, timetableBrowser):
-	addBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
-	timetableBrowser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
+def login_to_hokiespa(username, password, browser):
+	browser.open("https://banweb.banner.vt.edu/ssb/prod/twbkwbis.P_WWWLogin")
 
-	addBrowser.follow_link(text="Login to HokieSpa >>>")
-	timetableBrowser.follow_link(text="Login to HokieSpa >>>")
+	browser.follow_link(text="Login to HokieSpa >>>")
 
-	addBrowser.select_form(nr = 0)
-	timetableBrowser.select_form(nr = 0)
+	browser.select_form(nr = 0)
 
-	addBrowser["username"] = username
-	timetableBrowser["username"] = username
+	browser["username"] = username
 
-	addBrowser["password"] = password
-	timetableBrowser["password"] = password
+	browser["password"] = password
 
-	addBrowser.submit()
-	timetableBrowser.submit()
+	browser.submit()
 
 def navigate_to_timetable(timetableBrowser):
 	timetableBrowser.follow_link(text="Timetable of Classes")
@@ -40,10 +48,18 @@ def navigate_to_timetable(timetableBrowser):
 def navigate_to_dropadd(addBrowser):
 	addBrowser.follow_link(text="Hokie Spa")
 	addBrowser.follow_link(text="Registration and Schedule")
-	addBrowser.follow_link(text="Drop/Add", nr=0)
+
+	# IMPORTANT: Depending on whether Drop/Add is open/not open for Winter/Summer sessions,
+	# the "nr" paramter below must be modified accordingly.
+	addBrowser.follow_link(text="Drop/Add", nr=numberOfDropAddLinkToFollow)
 
 def is_course_open(timetableBrowser, crn):
 	timetableBrowser.select_form(nr = 0)
+
+	termYearControl = timetableBrowser.find_control(name = "TERMYEAR")
+	termYearControl.readonly = False
+	termYearControl.value = [termYear]
+
 	crnControl = timetableBrowser.find_control(name = "crn")
 	crnControl.readonly = False
 	crnControl._value = crn
@@ -73,6 +89,11 @@ def add_course(addBrowser, crn):
 
 def is_valid_class(crn, timetableBrowser):
 	timetableBrowser.select_form(nr = 0)
+
+	termYearControl = timetableBrowser.find_control(name = "TERMYEAR")
+	termYearControl.readonly = False
+	termYearControl.value = [termYear]
+
 	crnControl = timetableBrowser.find_control(name = "crn")
 	crnControl.readonly = False
 	crnControl._value = crn
@@ -109,11 +130,12 @@ def main():
 
 	# Runs the script until all classes are successfully added.
 	while len(classesToAdd) > 0:
-		openClasses = [crn for crn in classesToAdd if is_course_open(timetableBrowser, crn)]
 
-		for crn in openClasses:
-			if add_course(addBrowser, crn):
-				classesToAdd.remove(crn)
+		# Create a set of all currently open classes from the classesToAdd list.
+		openClasses = set([crn for crn in classesToAdd if is_course_open(timetableBrowser, crn)])
+
+		# List comprehension to filter any successfully added CRNs from classesToAdd.
+		classesToAdd = [crn for crn in classesToAdd if crn not in openClasses or not add_course(addBrowser, crn)]
 
 		sleep(30)
 
