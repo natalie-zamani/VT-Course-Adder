@@ -26,3 +26,7 @@ For these instructions, I will assume that you have Python 2.7.x, pip, and Git i
 4. Type `cd VT-Course-Adder`
 5. Type `pip install -r requirements.txt` to install the script dependencies.
 6. Type `python course_adder.py` to run the script.
+
+##Notes
+1. Depending on the term and year of the semester that you are attempting to add courses for, modify the "termYear" variable located at the top of the program. For instance, for Spring 2015 a vaue of "201501" should be entered.
+2. The variable "numberOfDropAddLinkToFollow" must be modified depending on which link on the Registration and Schedule site corresponds to the semester you are attempting to run this script for. Note that this value must be 0-indexed (i.e., start counting from 0 instead of 1).
