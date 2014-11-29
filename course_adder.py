@@ -142,6 +142,7 @@ def main():
 		# List comprehension to filter any successfully added CRNs from classesToAdd.
 		classesToAdd = [crn for crn in classesToAdd if crn not in openClasses or not add_course(addBrowser, crn)]
 
+		# Sleeps for 30 seconds before attempting to add courses again.
 		sleep(30)
 
 	print "All courses added."
