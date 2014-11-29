@@ -54,6 +54,7 @@ def navigate_to_dropadd(addBrowser):
 	addBrowser.follow_link(text="Drop/Add", nr=numberOfDropAddLinkToFollow)
 
 def is_course_open(timetableBrowser, crn):
+
 	timetableBrowser.select_form(nr = 0)
 
 	termYearControl = timetableBrowser.find_control(name = "TERMYEAR")
@@ -71,6 +72,7 @@ def is_course_open(timetableBrowser, crn):
 		return True
 
 def add_course(addBrowser, crn):
+
 	addBrowser.select_form(nr = 1)
 	crnControl = addBrowser.find_control(id = "crn_id1")
 	crnControl.readonly = False
@@ -100,6 +102,7 @@ def is_valid_class(crn, timetableBrowser):
 	response = timetableBrowser.submit()
 	responseText = response.get_data()
 	if "NO SECTIONS FOUND FOR THIS INQUIRY." in responseText:
+		print 'CRN:', crn, 'is invalid. Removing.'
 		return False
 	else:
 		return True
@@ -112,9 +115,11 @@ def main():
 	# Browser for course adding
 	addBrowser = mechanize.Browser()
 	addBrowser.set_handle_robots(False)
+	addBrowser.set_handle_refresh(False)
 	# Browser for checking the timetable for empty seat
 	timetableBrowser = mechanize.Browser()
 	timetableBrowser.set_handle_robots(False)
+	timetableBrowser.set_handle_refresh(False)
 
 	username = raw_input("Enter your username: ")
 	password = getpass.getpass("Enter your password: ")
