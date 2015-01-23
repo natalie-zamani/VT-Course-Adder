@@ -32,4 +32,4 @@ For these instructions, I will assume that you have Python 2.7.x, pip, and Git i
 2. The variable "numberOfDropAddLinkToFollow" must be modified to correspond to the correct "Drop/Add" link on the Registration and Schedule site for the semester you are attempting to run this script for. Note that this value must be 0-indexed (i.e., start counting from 0 instead of 1).
 
 
-If you run into any unexpected issues using this script, feel free to contact me (mzamani1@vt.edu), or [file an issue](https://github.com/mzamani1/VT-Course-Adder/issues).
+If you run into any unexpected issues using this script, [file an issue](https://github.com/mzamani1/VT-Course-Adder/issues).
