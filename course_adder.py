@@ -3,9 +3,18 @@
 import mechanize, base64, getpass, sys
 from bs4 import BeautifulSoup
 from time import sleep
+from datetime import date
 
-# Change this value for future sessions.
-termYear = "201501"
+# dictionary that maps semesters to their term id 
+semesterDict = {
+	"fall" : "09",
+	"winter" : "12",
+	"spring" : "01",
+	"summer i" : "06",
+	"summer ii" : "07"
+}
+
+termYear = None
 
 # This value must be modified to match the number of the Drop/Add 
 # link you wish to follow (0-indexed). For example, if you wish to 
@@ -22,8 +31,8 @@ def login(username, password, addBrowser, timetableBrowser):
 		navigate_to_dropadd(addBrowser)
 		print "Successfully logged in. Beginning timetable watching."
 	except mechanize._mechanize.LinkNotFoundError:
-		sys.exit("Link not found. Please change the termYear and \
-numberOfDropAddLinkToFollow variables to valid values.")
+		sys.exit("Link not found. Please change numberOfDropAddLinkToFollow \
+			variables to valid values.")
 	except:
 		print "Error logging in, attempting again..."
 		sleep(5)
@@ -123,7 +132,23 @@ def main():
 
 	username = raw_input("Enter your username: ")
 	password = getpass.getpass("Enter your password: ")
-	
+
+	# Get the semester portion of termYear
+	semester = raw_input("Enter the semester: ")
+	while semester.lower() not in semesterDict:
+		print("Options: Spring, Fall, Winter, Summer I, Summer II")
+		semester = raw_input("Enter the semester: ")
+
+	# Get the year portion of the termYear
+	thisYear = str(date.today().year)
+	nextYear = str(date.today().year + 1)
+	year = raw_input("Enter the year (" + thisYear + " or " + nextYear + "): ")
+	while year != thisYear and year != nextYear:
+		year = raw_input("Select either " + thisYear + " or " + nextYear + ": ")	
+
+	# constructing termYear
+	termYear = year + semesterDict[semester.lower()]
+
 	classesToAdd = raw_input("Enter CRN's that you wish to add separated by spaces: ")
 	classesToAdd = map(int, classesToAdd.split())
 
