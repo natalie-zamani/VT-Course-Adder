@@ -114,7 +114,7 @@ def is_valid_class(crn, timetableBrowser, termYear):
 	else:
 		return True
 
-def filter_invalid_crns(classes, timetableBrowser):
+def filter_invalid_crns(classes, timetableBrowser, termYear):
 	# Removes any elements from the list if the length is not 5.
 	classes[:] = [crn for crn in classes if len(str(crn)) == 5 and is_valid_class(crn, timetableBrowser, termYear)]
 
@@ -154,8 +154,8 @@ def main():
 
 	# Eliminates CRN's not of length 5 and that are do not have a class
 	# associated with them.
-	filter_invalid_crns(classesToAdd, timetableBrowser)
-
+	filter_invalid_crns(classesToAdd, timetableBrowser, termYear)
+	
 	# Runs the script until all classes are successfully added.
 	while len(classesToAdd) > 0:
 
