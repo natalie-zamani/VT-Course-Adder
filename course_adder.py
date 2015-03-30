@@ -14,8 +14,6 @@ semesterDict = {
 	"summer ii" : "07"
 }
 
-termYear = None
-
 # This value must be modified to match the number of the Drop/Add 
 # link you wish to follow (0-indexed). For example, if you wish to 
 # open the first drop-add link, you should set the value to 0, second
@@ -62,7 +60,7 @@ def navigate_to_dropadd(addBrowser):
 	# the "nr" paramter below must be modified accordingly.
 	addBrowser.follow_link(text="Drop/Add", nr=numberOfDropAddLinkToFollow)
 
-def is_course_open(timetableBrowser, crn):
+def is_course_open(timetableBrowser, crn, termYear):
 
 	timetableBrowser.select_form(nr = 0)
 
@@ -98,7 +96,7 @@ def add_course(addBrowser, crn):
 		print "CRN:", crn, "successfully added. Removing from the list."
 		return True
 
-def is_valid_class(crn, timetableBrowser):
+def is_valid_class(crn, timetableBrowser, termYear):
 	timetableBrowser.select_form(nr = 0)
 
 	termYearControl = timetableBrowser.find_control(name = "TERMYEAR")
@@ -118,7 +116,7 @@ def is_valid_class(crn, timetableBrowser):
 
 def filter_invalid_crns(classes, timetableBrowser):
 	# Removes any elements from the list if the length is not 5.
-	classes[:] = [crn for crn in classes if len(str(crn)) == 5 and is_valid_class(crn, timetableBrowser)]
+	classes[:] = [crn for crn in classes if len(str(crn)) == 5 and is_valid_class(crn, timetableBrowser, termYear)]
 
 def main():
 	# Browser for course adding
@@ -162,7 +160,7 @@ def main():
 	while len(classesToAdd) > 0:
 
 		# Create a set of all currently open classes from the classesToAdd list.
-		openClasses = set([crn for crn in classesToAdd if is_course_open(timetableBrowser, crn)])
+		openClasses = set([crn for crn in classesToAdd if is_course_open(timetableBrowser, crn, termYear)])
 
 		# List comprehension to filter any successfully added CRNs from classesToAdd.
 		classesToAdd = [crn for crn in classesToAdd if crn not in openClasses or not add_course(addBrowser, crn)]
