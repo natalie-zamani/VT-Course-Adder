@@ -14,25 +14,16 @@ semesterDict = {
 	"summer ii" : "07"
 }
 
-termYear = None
-
-# This value must be modified to match the number of the Drop/Add 
-# link you wish to follow (0-indexed). For example, if you wish to 
-# open the first drop-add link, you should set the value to 0, second
-# to 1, etc.
-numberOfDropAddLinkToFollow = 2
-
-def login(username, password, addBrowser, timetableBrowser):
+def login(username, password, addBrowser, timetableBrowser, termYear):
 	try:
 		login_to_hokiespa(username, password, addBrowser)
 		login_to_hokiespa(username, password, timetableBrowser)
 
 		navigate_to_timetable(timetableBrowser)
-		navigate_to_dropadd(addBrowser)
+		navigate_to_dropadd(addBrowser, termYear)
 		print "Successfully logged in. Beginning timetable watching."
 	except mechanize._mechanize.LinkNotFoundError:
-		sys.exit("Link not found. Please change numberOfDropAddLinkToFollow \
-			variables to valid values.")
+		sys.exit("Link not found.")
 	except:
 		print "Error logging in, attempting again..."
 		sleep(5)
@@ -54,15 +45,15 @@ def login_to_hokiespa(username, password, browser):
 def navigate_to_timetable(timetableBrowser):
 	timetableBrowser.follow_link(text="Timetable of Classes")
 
-def navigate_to_dropadd(addBrowser):
+def navigate_to_dropadd(addBrowser, termYear):
 	addBrowser.follow_link(text="Hokie Spa")
 	addBrowser.follow_link(text="Registration and Schedule")
 
-	# IMPORTANT: Depending on whether Drop/Add is open/not open for Winter/Summer sessions,
-	# the "nr" paramter below must be modified accordingly.
-	addBrowser.follow_link(text="Drop/Add", nr=numberOfDropAddLinkToFollow)
+	# Creating regex for drop add
+	linkRegex = ".+(P_AddDropCrse\?term_in=" + termYear + ")"
+	addBrowser.follow_link(url_regex=linkRegex)
 
-def is_course_open(timetableBrowser, crn):
+def is_course_open(timetableBrowser, crn, termYear):
 
 	timetableBrowser.select_form(nr = 0)
 
@@ -98,7 +89,7 @@ def add_course(addBrowser, crn):
 		print "CRN:", crn, "successfully added. Removing from the list."
 		return True
 
-def is_valid_class(crn, timetableBrowser):
+def is_valid_class(crn, timetableBrowser, termYear):
 	timetableBrowser.select_form(nr = 0)
 
 	termYearControl = timetableBrowser.find_control(name = "TERMYEAR")
@@ -116,9 +107,9 @@ def is_valid_class(crn, timetableBrowser):
 	else:
 		return True
 
-def filter_invalid_crns(classes, timetableBrowser):
+def filter_invalid_crns(classes, timetableBrowser, termYear):
 	# Removes any elements from the list if the length is not 5.
-	classes[:] = [crn for crn in classes if len(str(crn)) == 5 and is_valid_class(crn, timetableBrowser)]
+	classes[:] = [crn for crn in classes if len(str(crn)) == 5 and is_valid_class(crn, timetableBrowser, termYear)]
 
 def main():
 	# Browser for course adding
@@ -152,17 +143,17 @@ def main():
 	classesToAdd = raw_input("Enter CRN's that you wish to add separated by spaces: ")
 	classesToAdd = map(int, classesToAdd.split())
 
-	login(username, password, addBrowser, timetableBrowser)
+	login(username, password, addBrowser, timetableBrowser, termYear)
 
 	# Eliminates CRN's not of length 5 and that are do not have a class
 	# associated with them.
-	filter_invalid_crns(classesToAdd, timetableBrowser)
-
+	filter_invalid_crns(classesToAdd, timetableBrowser, termYear)
+	
 	# Runs the script until all classes are successfully added.
 	while len(classesToAdd) > 0:
 
 		# Create a set of all currently open classes from the classesToAdd list.
-		openClasses = set([crn for crn in classesToAdd if is_course_open(timetableBrowser, crn)])
+		openClasses = set([crn for crn in classesToAdd if is_course_open(timetableBrowser, crn, termYear)])
 
 		# List comprehension to filter any successfully added CRNs from classesToAdd.
 		classesToAdd = [crn for crn in classesToAdd if crn not in openClasses or not add_course(addBrowser, crn)]
